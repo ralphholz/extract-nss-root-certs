@@ -128,9 +128,9 @@ func main() {
 	        log.Fatalf("Failed to create output file: %s\n", err)
 	    }
         outputTrustedCerts(outFile, objects)
+    } else {
+	    outputTrustedCerts(os.Stdout, objects)
     }
-
-	outputTrustedCerts(os.Stdout, objects)
 }
 
 // parseIgnoreList parses the ignore-list file into ignoreList
