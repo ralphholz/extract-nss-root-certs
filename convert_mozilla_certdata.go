@@ -63,6 +63,7 @@ var (
     inFile                = flag.String("in-file", "", "Read from this file instead of the default (certdata.txt)")
     toFile                = flag.String("to-file", "certdata.txt.out", "Write result to a file")
 	ignoreListFilename    = flag.String("ignore-list", "", "File containing a list of certificates to ignore")
+    verbose               = flag.Bool("verbose", false, "Give verbose output")
 )
 
 func main() {
@@ -87,11 +88,11 @@ func main() {
         inFilename = *inFile
     }
 
-    fmt.Printf("Reading from %s\n", inFilename)
+    cPrint(fmt.Sprintf("Reading from %s", inFilename))
 
     if writeOutfile { outFilename = *toFile }
 
-    fmt.Printf("Writing to %s\n", outFilename)
+    cPrint(fmt.Sprintf("Writing to %s\n", outFilename))
 
 
     ignoreList = make(map[string]string)
@@ -113,9 +114,9 @@ func main() {
 	inFile.Close()
 
 	if !*toFiles {
-		os.Stdout.WriteString(license)
+		cPrint(license)
 		if len(cvsId) > 0 {
-			os.Stdout.WriteString("CVS_ID " + cvsId + "\n")
+			cPrint("CVS_ID " + cvsId)
 		}
 	}
 
@@ -537,4 +538,11 @@ func unescapeLabel(escaped string) string {
 	}
 
 	return string(out)
+}
+
+// conditional print to stdout
+func cPrint(text string) {
+    if *verbose {
+        fmt.Printf("%s\n", text)
+    }
 }
