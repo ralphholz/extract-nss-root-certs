@@ -60,6 +60,8 @@ var (
 
 	includedUntrustedFlag = flag.Bool("include-untrusted", false, "If set, untrusted certificates will also be included in the output")
 	toFiles               = flag.Bool("to-files", false, "If set, individual certificate files will be created in the current directory")
+    inFile                = flag.String("in-file", "", "Read from this file instead of the default (certdata.txt)")
+    toFile                = flag.String("to-file", "certdata.txt.out", "Write result to a file")
 	ignoreListFilename    = flag.String("ignore-list", "", "File containing a list of certificates to ignore")
 )
 
@@ -67,15 +69,35 @@ func main() {
 
 	flag.Parse()
 
-	inFilename := "certdata.txt"
-	if len(flag.Args()) == 1 {
-		inFilename = flag.Arg(0)
-	} else if len(flag.Args()) > 1 {
-		fmt.Printf("Usage: %s [<certdata.txt file>]\n", os.Args[0])
-		os.Exit(1)
-	}
+//    fmt.Printf("toFiles: %b", *toFiles)
+//    fmt.Printf("toFile: %s", *toFile)
 
-	ignoreList = make(map[string]string)
+    inFilename := "certdata.txt"
+    outFilename := "certdata.crt"
+
+    writeSingleFiles := false
+    if *toFiles { writeSingleFiles = true }
+
+    writeOutfile := false
+    if *toFile != "" { writeOutfile = true }
+
+    if writeSingleFiles && writeOutfile {
+        fmt.Printf("Cannot use --to-file together with --to-file\n")
+        os.Exit(1)
+    }
+
+    if *inFile != "" {
+        inFilename = *inFile
+    }
+
+    fmt.Printf("Reading from %s\n", inFilename)
+
+    if writeOutfile { outFilename = *toFile }
+
+    fmt.Printf("Writing to %s\n", outFilename)
+
+
+    ignoreList = make(map[string]string)
 	if *ignoreListFilename != "" {
 		ignoreListFile, err := os.Open(*ignoreListFilename)
 		if err != nil {
@@ -99,6 +121,14 @@ func main() {
 			os.Stdout.WriteString("CVS_ID " + cvsId + "\n")
 		}
 	}
+
+    if writeOutfile {
+        outFile, err := os.Create(outFilename)
+        if err != nil {
+	        log.Fatalf("Failed to create output file: %s\n", err)
+	    }
+        outputTrustedCerts(outFile, objects)
+    }
 
 	outputTrustedCerts(os.Stdout, objects)
 }
@@ -125,8 +155,12 @@ func parseInput(inFile io.Reader) (license, cvsId string, objects []*Object) {
 	var lineNo int
 
 	// Discard anything prior to the license block.
+    // rh: In the past, Mozilla has used different license blocks before
+    // the actual content. This code attempts to detect them all.
 	for line, eof := getLine(in, &lineNo); !eof; line, eof = getLine(in, &lineNo) {
-		if strings.Contains(line, "This Source Code") {
+		if strings.Contains(line, "This Source Code") || // newest version: > CVS rev 1.82 
+            strings.Contains(line, "The contents of this file are subject to the Mozilla Public") || // oldest: CVS rev 1.1-1.32
+            strings.Contains(line, "***** BEGIN LICENSE BLOCK *****") { // CVS rev 1.33-1.82
 			license += line
 			license += "\n"
 			break
@@ -205,6 +239,10 @@ func outputTrustedCerts(out *os.File, objects []*Object) {
 	certs := filterObjectsByClass(objects, "CKO_CERTIFICATE")
 	trusts := filterObjectsByClass(objects, "CKO_NSS_TRUST")
 	filenames := make(map[string]bool)
+    // rh: I don't need this configurable: 
+    // TODO: change this later to write to file if
+    // includeUntrusted is set
+    // untrustedFilename := "untrusted.crt"
 
 	for _, cert := range certs {
 		derBytes := cert.attrs["CKA_VALUE"].value
