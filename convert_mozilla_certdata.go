@@ -59,7 +59,8 @@ var (
 	ignoreList map[string]string
 
 	includedUntrustedFlag = flag.Bool("include-untrusted", false, "If set, untrusted certificates will also be included in the output")
-	toFiles               = flag.Bool("to-files", false, "If set, individual certificate files will be created in the current directory")
+    untrustedFile         = flag.String("untrusted-file", "untrusted.crt", "File to write untrusted certificates to")
+    toFiles               = flag.Bool("to-files", false, "If set, individual certificate files will be created in the current directory")
     inFile                = flag.String("in-file", "", "Read from this file instead of the default (certdata.txt)")
     outFile               = flag.String("out-file", "certdata.txt.out", "Write result to a file")
 	ignoreListFilename    = flag.String("ignore-list", "", "File containing a list of certificates to ignore")
@@ -72,6 +73,7 @@ func main() {
 
     inFilename := "certdata.txt"
     outFilename := "certdata.crt"
+    untrustedFilename := "untrusted.crt"
 
     writeSingleFiles := false
     if *toFiles { writeSingleFiles = true }
@@ -87,13 +89,15 @@ func main() {
     if *inFile != "" {
         inFilename = *inFile
     }
-
-    cPrint(fmt.Sprintf("Reading from %s", inFilename))
+    cPrint(fmt.Sprintf("Reading cert data from %s", inFilename))
 
     if writeOutfile { outFilename = *outFile }
+    cPrint(fmt.Sprintf("Writing trusted certs to %s\n", outFilename))
 
-    cPrint(fmt.Sprintf("Writing to %s\n", outFilename))
-
+    if *untrustedFile != "" {
+        untrustedFilename = *untrustedFile
+    }
+    cPrint(fmt.Sprintf("Writing untrusted certificates to %s\n", untrustedFilename))
 
     ignoreList = make(map[string]string)
 	if *ignoreListFilename != "" {
@@ -234,8 +238,8 @@ func parseInput(inFile io.Reader) (license, cvsId string, objects []*Object) {
 // outputTrustedCerts writes a series of PEM encoded certificates to out by
 // finding certificates and their trust records in objects.
 func outputTrustedCerts(out *os.File, objects []*Object) {
-	certs := filterObjectsByClass(objects, "CKO_CERTIFICATE")
-	trusts := filterObjectsByClass(objects, "CKO_NSS_TRUST")
+	certs := filterObjectsByClass(objects, []string{"CKO_CERTIFICATE"})
+	trusts := filterObjectsByClass(objects, []string{"CKO_NSS_TRUST", "CKO_NETSCAPE_TRUST"})
 	filenames := make(map[string]bool)
     // rh: I don't need this configurable: 
     // TODO: change this later to write to file if
@@ -385,11 +389,13 @@ func nameToString(name pkix.Name) string {
 
 // filterObjectsByClass returns a subset of in where each element has the given
 // class.
-func filterObjectsByClass(in []*Object, class string) (out []*Object) {
-	for _, object := range in {
-		if string(object.attrs["CKA_CLASS"].value) == class {
-			out = append(out, object)
-		}
+func filterObjectsByClass(objects []*Object, classes []string) (out []*Object) {
+	for _, object := range objects {
+        for _, class := range classes {
+		    if string(object.attrs["CKA_CLASS"].value) == class {
+			    out = append(out, object)
+		    }
+        }
 	}
 	return
 }
