@@ -61,7 +61,7 @@ var (
 	includedUntrustedFlag = flag.Bool("include-untrusted", false, "If set, untrusted certificates will also be included in the output")
 	toFiles               = flag.Bool("to-files", false, "If set, individual certificate files will be created in the current directory")
     inFile                = flag.String("in-file", "", "Read from this file instead of the default (certdata.txt)")
-    toFile                = flag.String("to-file", "certdata.txt.out", "Write result to a file")
+    outFile               = flag.String("out-file", "certdata.txt.out", "Write result to a file")
 	ignoreListFilename    = flag.String("ignore-list", "", "File containing a list of certificates to ignore")
     verbose               = flag.Bool("verbose", false, "Give verbose output")
 )
@@ -77,7 +77,7 @@ func main() {
     if *toFiles { writeSingleFiles = true }
 
     writeOutfile := false
-    if *toFile != "" { writeOutfile = true }
+    if *outFile != "" { writeOutfile = true }
 
     if writeSingleFiles && writeOutfile {
         fmt.Printf("Cannot use --to-file together with --to-file\n")
@@ -90,7 +90,7 @@ func main() {
 
     cPrint(fmt.Sprintf("Reading from %s", inFilename))
 
-    if writeOutfile { outFilename = *toFile }
+    if writeOutfile { outFilename = *outFile }
 
     cPrint(fmt.Sprintf("Writing to %s\n", outFilename))
 
