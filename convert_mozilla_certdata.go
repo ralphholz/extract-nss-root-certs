@@ -69,9 +69,6 @@ func main() {
 
 	flag.Parse()
 
-//    fmt.Printf("toFiles: %b", *toFiles)
-//    fmt.Printf("toFile: %s", *toFile)
-
     inFilename := "certdata.txt"
     outFilename := "certdata.crt"
 
