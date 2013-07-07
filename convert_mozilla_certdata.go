@@ -239,6 +239,8 @@ func parseInput(inFile io.Reader) (license, cvsId string, objects []*Object) {
 // finding certificates and their trust records in objects.
 func outputTrustedCerts(out *os.File, objects []*Object) {
 	certs := filterObjectsByClass(objects, []string{"CKO_CERTIFICATE"})
+    // rh: as far as I can tell, *NSS*TRUST and *NETSCAPE*TRUST were never used
+    // together in the same file
 	trusts := filterObjectsByClass(objects, []string{"CKO_NSS_TRUST", "CKO_NETSCAPE_TRUST"})
 	filenames := make(map[string]bool)
     // rh: I don't need this configurable: 
@@ -295,14 +297,30 @@ func outputTrustedCerts(out *os.File, objects []*Object) {
 
 		var trusted bool
 		switch string(trustType) {
-		case "CKT_NSS_NOT_TRUSTED":
-			// An explicitly distrusted cert
-			trusted = false
-		case "CKT_NSS_TRUSTED_DELEGATOR":
+		case "CKT_NSS_TRUSTED_DELEGATOR", "CKT_NETSCAPE_TRUSTED_DELEGATOR":
 			// A cert trusted for issuing SSL server certs.
 			trusted = true
-		case "CKT_NSS_TRUST_UNKNOWN", "CKT_NSS_MUST_VERIFY_TRUST":
-			// A cert not trusted for issuing SSL server certs, but is trusted for other purposes.
+        case "CKT_NSS_NOT_TRUSTED", "CKT_NETSCAPE_UNTRUSTED":
+			// An explicitly distrusted cert
+			trusted = false
+        case "CKT_NETSCAPE_TRUSTED":
+            // rh: a value used only in CVS 1.1 and 1.3 for test certs
+            // These are of course not trusted and were in fact removed
+            // before first real certs were added to the root store
+            // (in CVS rev 1.4).
+            trusted = false
+        case "HTONL(CKT_NETSCAPE_TRUSTED)":
+            // rh: a value used only in CVS rev 1.2 for a test cert,
+            // reverted in CVS rev 1.3.
+            trusted = false
+        case "CKT_NETSCAPE_VALID_DELEGATOR":
+            // rh: a value only found in CVS rev 1.16, used for US Post Office
+            // It is actually an intermediate certificate
+            // https://bugzilla.mozilla.org/show_bug.cgi?id=126653
+            // TODO: find out if that cert was actually trusted or not
+            trusted = false
+		case "CKT_NSS_TRUST_UNKNOWN", "CKT_NSS_MUST_VERIFY_TRUST", "CKT_NETSCAPE_TRUST_UNKNOWN", "CKT_NETSCAPE_VALID":
+			// A cert not trusted for issuing SSL server certs, but possibly trusted for other purposes.
 			trusted = false
 		default:
 			log.Fatalf("Unknown trust value '%s' found for trust record starting on line %d", trustType, trust.startingLine)
