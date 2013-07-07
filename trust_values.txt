@@ -1,0 +1,23 @@
+CKT_NSS_TRUSTED_DELEGATOR
+-> meaning: may issue SSL server certs
+-> replaces earlier CKT_NETSCAPE_TRUSTED_DELEGATOR from CVS rev 1.74 on
+-> seems never to be used together with its precursor
+
+CKT_NSS_NOT_TRUSTED
+-> meaning: explicitly distrusted certificate
+-> introduced from CVS rev 1.74 on
+
+
+CKT_NETSCAPE_VALID
+-> meaning: distrusted certificate; used to indicate rogue certs
+-> PROBLEM: in rev 1.10 used for trust into Thawte. BUGGER.
+
+
+CKT_NSS_TRUST_UNKNOWN
+-> meaning: not trusted for SSL server certs; but?
+-> replaces earlier CKT_NETSCAPE_TRUST_UNKNOWN from CVS rev 1.74 on
+-> precursor itself was only introduced in CVS rev 1.41
+
+CKT_NSS_MUST_VERIFY_TRUST
+-> meaning: not trusted for SSL server certs; but?
+-> introduced in CVS rev 1.75; has no precursor

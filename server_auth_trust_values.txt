@@ -1,0 +1,48 @@
+# trust string; earliest; last; meaning changed; constant meaning; comment
+# TODO: MAP Firefox version to CVS ID
+
+CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NETSCAPE_TRUSTED; 1.1; 1.3; unlikely; used for test certs; IGNORE
+
+CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NETSCAPE_TRUSTED_DELEGATOR; 1.4; 1.73; unlikely; trust; TRUST
+
+CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NETSCAPE_TRUST_UNKNOWN; 1.41; 1.73; unlikely; unknown; IGNORE?
+-> replaces CKT_NETSCAPE_VALID from 1.41 on!
+-> fetch revision and find out what code does
+
+CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NETSCAPE_UNTRUSTED; 1.51; 1.73 
+
+CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NETSCAPE_VALID; 1.4; 1.73; unlikely; valid CA, but not trusted for purpose; IGNORE
+
+CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NETSCAPE_VALID_DELEGATOR; 1.16; 1.16; no; used for USPS; intermediate only used once, Bug https://bugzilla.mozilla.org/show_bug.cgi?id=126653 IGNORE? -> fetch revision and find out what code does
+
+CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NSS_MUST_VERIFY_TRUST; 1.81; _ ; unlikely ; unknown; IGNORE? -> find out what code does
+
+CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NSS_NOT_TRUSTED; 1.74; _ ; unlikely ; explicit distrust; DISTRUST
+
+CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NSS_TRUSTED_DELEGATOR; 1.74; _ ; unlikely ; trust; TRUST
+
+CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NSS_TRUST_UNKNOWN; 1.74; 1.83; unlikely; unknown; introduced and stopped IGNORE?
+-> replaces CKT_NETSCAPE_TRUST_UNKNOWN from 1.74 on!
+-> fetch rev and find out what code does
+
+CKA_TRUST_SERVER_AUTH CK_TRUST HTONL(CKT_NETSCAPE_TRUSTED); 1.2; 1.2; no ; used for test certs; IGNORE
+
+
+The purpose of the valid flags seems to be to display the CA in different tabs in the certificate manager.
+
+TRUST as server auth:
+CKT_NETSCAPE_TRUSTED_DELEGATOR
+CKT_NSS_TRUSTED_DELEGATOR
+
+IGNORE:
+CKT_NETSCAPE_TRUSTED
+CKT_NETSCAPE_VALID
+HTONL(CKT_NETSCAPE_TRUSTED)
+
+DISTRUST:
+CKT_NSS_NOT_TRUSTED
+
+
+
+UNKNOWN_TRUST:
+CKT_NETSCAPE_VALID -> CKT_NETSCAPE_TRUST_UNKNOWN (1.41) -> CKT_NSS_TRUST_UNKNOWN (1.74)
