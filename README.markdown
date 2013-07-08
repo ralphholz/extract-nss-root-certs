@@ -28,4 +28,5 @@ Known issues:
     is correct.
   * CVS rev. 1.1-1.3 of Mozilla root store contain test certificates with
     such an unusual ASN.1 encoding that Go's X.509 library hickups and goes
-    to sleep with an headache (throws error).
+    to sleep with an headache (throws error). Openssl does not like them, either.
+    So it's probably best to consider those revisions as "never valid root store".
