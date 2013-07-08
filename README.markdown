@@ -1,8 +1,13 @@
 Root Store Archaeology
 =======================
 
-Scripts to help you interpret (earlier and current) revisions of the NSS
+Scripts to help you examine (earlier and current) revisions of the NSS
 root store.
+
+instructions.txt
+----------------
+Instructions to get a count over all root certs in the root store.
+
 
 convert_mozilla_certdata.go
 ---------------------------
@@ -35,3 +40,21 @@ Known issues:
     such an unusual ASN.1 encoding that Go's X.509 library hickups and goes
     to sleep with an headache (throws error). Openssl does not like them, either.
     So it's probably best to consider those revisions as "never valid root store".
+
+count_certs_in_root_store.py
+----------------------------
+Script that walks over the extracted root store and gets the count
+of root certificates.
+
+create_certdata_by_rev.sh
+-------------------------
+Script to step through all CVS revisions of certdata.txt and write into
+separate files.
+
+extract_root_store_by_rev.sh
+----------------------------
+Batch job steering the Go script
+
+parse_revisions.py
+------------------
+Get CVS revision numbers from CVS log, trunk only.
