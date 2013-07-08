@@ -1,6 +1,11 @@
-Extending script by agl
+Root Store Archaeology
 =======================
 
+Scripts to help you interpret (earlier and current) revisions of the NSS
+root store.
+
+convert_mozilla_certdata.go
+---------------------------
 This is a slightly modified script to extract the Mozilla root store from a
 a certdata.txt. The original script, which contains all the magic, has been
 written by agl.
