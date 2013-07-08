@@ -1,0 +1,13 @@
+1) First, get a CVS of the Mozilla code.
+2) Locate the root store: certdata.txt. Switch to that directory.
+3) Extract the revisions with parse-revisions.
+4) Extract rootstore by revision with create_certdata_by_rev.sh
+5) Use rh's extended version of agl's script to extract from
+the octal code.
+6) Count over BEGIN CERTIFICATE per root store using count_certs_in_root_store.py
+7) Make adjustments: the script will complain in some cases about
+invalid certs or trust objects. These are acceptable to NSS, but
+not to the scripts.
+Known revs:
+1.10 and 1.11 contain bad trust objects - count as TRUSTED
+1.81-? contain a cert with a negative serial number - count as TRUSTED
