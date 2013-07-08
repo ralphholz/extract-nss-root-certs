@@ -1,15 +1,16 @@
-Extracting Mozilla's Root Certificates
-======================================
+Extending script by agl
+=======================
 
-When people need a list of root certificates, they often turn to Mozilla's. However, Mozilla doesn't produce a nice list of PEM encoded certificate, rather they keep them in a form which is convenient for NSS to build from:
+This is a slightly modified script to extract the Mozilla root store from a
+a certdata.txt. The original script, which contains all the magic, has been
+written by agl.
 
-    https://mxr.mozilla.org/mozilla/source/security/nss/lib/ckfw/builtins/certdata.txt?raw=1
+My modifications:
+  * Add some command-line flags I need to run it in batch mode
+  * Make script parse older root store formats, too (from CVS rev 1.1 on)
+  * In particular, trust values and descriptions have changed over time. Parse them all.
 
-Several people have written quick scripts to try and convert this into PEM format, but they often miss something critical: some certificates are explicitly _distrusted_. These include the DigiNotar certificates and the misissued COMODO certificates. If you don't parse the trust records from the NSS data file, then you end up trusting these!
+For the original description what the script does, and how to use it, please go to:
 
-So this is a tool that I wrote for converting the NSS file to PEM format which is also aware of the trust records. It can be built with Go1. See http://golang.org/doc/install.html, but don't pass "-u release" when fetching the repository.
+    https://github.com/agl/extract-nss-root-certs
 
-One you have Go installed please do the following:
-
-    % curl https://mxr.mozilla.org/mozilla/source/security/nss/lib/ckfw/builtins/certdata.txt\?raw\=1 -o certdata.txt
-    % go run convert_mozilla_certdata.go > certdata.new
