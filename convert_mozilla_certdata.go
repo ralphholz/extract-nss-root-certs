@@ -115,7 +115,7 @@ func main() {
 	}
 
 	license, cvsId, objects := parseInput(inFile)
-	inFile.Close()
+    inFile.Close()
 
 	if !*toFiles {
 		cPrint(license)
@@ -268,8 +268,12 @@ func outputTrustedCerts(out *os.File, objects []*Object) {
 		if err != nil {
 			// This is known to occur because of a broken certificate in NSS.
 			// https://bugzilla.mozilla.org/show_bug.cgi?id=707995
-			log.Printf("Failed to parse certificate starting on line %d: %s", cert.startingLine, err)
-			continue
+            filename := "certdata.txt"
+            if *inFile != "" {
+                filename = *inFile
+            }
+            log.Printf("File %s: Failed to parse certificate starting on line %d: %s", filename, cert.startingLine, err)
+            continue
 		}
 
 		// TODO(agl): wtc tells me that Mozilla might get rid of the
@@ -277,7 +281,6 @@ func outputTrustedCerts(out *os.File, objects []*Object) {
 		// to match trust records to certificates (which is what NSS
 		// currently uses). This needs some changes to the crypto/x509
 		// package to keep the raw names around.
-
 		var trust *Object
 		for _, possibleTrust := range trusts {
 			if bytes.Equal(digest, possibleTrust.attrs["CKA_CERT_SHA1_HASH"].value) {
