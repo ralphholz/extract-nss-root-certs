@@ -248,6 +248,11 @@ func outputTrustedCerts(out *os.File, objects []*Object) {
     // includeUntrusted is set
     // untrustedFilename := "untrusted.crt"
 
+    filename := "certdata.txt"
+    if *inFile != "" {
+        filename = *inFile
+    }
+
 	for _, cert := range certs {
 		derBytes := cert.attrs["CKA_VALUE"].value
 		hash := sha1.New()
@@ -260,7 +265,7 @@ func outputTrustedCerts(out *os.File, objects []*Object) {
 			if len(comment) > 0 {
 				sep = ": "
 			}
-			log.Printf("Skipping explicitly ignored certificate: %s%s%s", label, sep, comment)
+            log.Printf("File %s: Skipping explicitly ignored certificate: %s%s%s", filename, label, sep, comment)
 			continue
 		}
 
@@ -268,10 +273,6 @@ func outputTrustedCerts(out *os.File, objects []*Object) {
 		if err != nil {
 			// This is known to occur because of a broken certificate in NSS.
 			// https://bugzilla.mozilla.org/show_bug.cgi?id=707995
-            filename := "certdata.txt"
-            if *inFile != "" {
-                filename = *inFile
-            }
             log.Printf("File %s: Failed to parse certificate starting on line %d: %s", filename, cert.startingLine, err)
             continue
 		}
@@ -290,12 +291,12 @@ func outputTrustedCerts(out *os.File, objects []*Object) {
 		}
 
 		if trust == nil {
-			log.Fatalf("No trust found for certificate object starting on line %d (sha1: %x)", cert.startingLine, digest)
+            log.Fatalf("File %s: No trust found for certificate object starting on line %d (sha1: %x)", filename, cert.startingLine, digest)
 		}
 
 		trustType := trust.attrs["CKA_TRUST_SERVER_AUTH"].value
 		if len(trustType) == 0 {
-			log.Fatalf("No CKA_TRUST_SERVER_AUTH found in trust starting at line %d", trust.startingLine)
+            log.Fatalf("File %s: No CKA_TRUST_SERVER_AUTH found in trust starting at line %d", filename, trust.startingLine)
 		}
 
 		var trusted bool
@@ -326,7 +327,7 @@ func outputTrustedCerts(out *os.File, objects []*Object) {
 			// A cert not trusted for issuing SSL server certs, but possibly trusted for other purposes.
 			trusted = false
 		default:
-			log.Fatalf("Unknown trust value '%s' found for trust record starting on line %d", trustType, trust.startingLine)
+            log.Fatalf("File %s: Unknown trust value '%s' found for trust record starting on line %d", filename, trustType, trust.startingLine)
 		}
 
 		if !trusted && !*includedUntrustedFlag {
