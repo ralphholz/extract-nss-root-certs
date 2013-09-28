@@ -33,6 +33,9 @@
 # CVS directly -- see parse_revisions for
 # instructions how to access the Mozilla CVS repo.
 
+# The CVS is closed. Last revision number was 1.87,
+# so we can hard-code that.
+
 mkdir certdata_by_rev
 for REVNUM in {1..87}
 do
