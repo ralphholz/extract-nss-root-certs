@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 # This file is part of the SSL Landscape:
 #
 # Ralph Holz, Lothar Braun, Nils Kammenhuber, and Georg Carle.
@@ -23,7 +25,6 @@
 # Original author: Ralph Holz, ralph@ralphholz.de
 
 
-#!/usr/bin/python
 
 import sys
 import time
