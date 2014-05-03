@@ -1,5 +1,6 @@
 // Copyright 2012 Google Inc. All Rights Reserved.
 // Author: agl@chromium.org (Adam Langley)
+// Author: holz@net.in.tum.de (Ralph Holz) (modifications and extensions)
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +18,7 @@
 // certificates in PEM form.
 //
 // A current version of certdata.txt can be downloaded from:
-//   https://mxr.mozilla.org/mozilla/source/security/nss/lib/ckfw/builtins/certdata.txt?raw=1
+//   https://hg.mozilla.org/mozilla-central/raw-file/tip/security/nss/lib/ckfw/builtins/certdata.txt
 package main
 
 import (
@@ -82,7 +83,7 @@ func main() {
     if *outFile != "" { writeOutfile = true }
 
     if writeSingleFiles && writeOutfile {
-        fmt.Printf("Cannot use --to-file together with --to-file\n")
+        fmt.Printf("Cannot use --out-file together with --to-files\n")
         os.Exit(1)
     }
 
@@ -97,7 +98,10 @@ func main() {
     if *untrustedFile != "" {
         untrustedFilename = *untrustedFile
     }
-    cPrint(fmt.Sprintf("Writing untrusted certificates to %s\n", untrustedFilename))
+
+    if *includedUntrustedFlag {
+        cPrint(fmt.Sprintf("Writing untrusted certificates to %s\n", untrustedFilename))
+    }
 
     ignoreList = make(map[string]string)
 	if *ignoreListFilename != "" {
@@ -172,8 +176,10 @@ func parseInput(inFile io.Reader) (license, cvsId string, objects []*Object) {
 		log.Fatalf("Read whole input and failed to find beginning of license")
 	}
 	// Now collect the license block.
+	// certdata.txt from hg.mozilla.org no longer contains CVS_ID.
+	// For these versions, we need to use the len(line) and beginData work-around
 	for line, eof := getLine(in, &lineNo); !eof; line, eof = getLine(in, &lineNo) {
-		if strings.Contains(line, "CVS_ID") {
+		if strings.Contains(line, "CVS_ID") || len(line) == 0 {
 			break
 		}
 		license += line
@@ -181,6 +187,7 @@ func parseInput(inFile io.Reader) (license, cvsId string, objects []*Object) {
 	}
 
 	var currentObject *Object
+	var beginData bool
 
 	for line, eof := getLine(in, &lineNo); !eof; line, eof = getLine(in, &lineNo) {
 		if len(line) == 0 || line[0] == '#' {
@@ -192,6 +199,7 @@ func parseInput(inFile io.Reader) (license, cvsId string, objects []*Object) {
 			continue
 		}
 		if line == "BEGINDATA" {
+			beginData = true
 			continue
 		}
 
@@ -226,6 +234,10 @@ func parseInput(inFile io.Reader) (license, cvsId string, objects []*Object) {
 			attrType: words[1],
 			value:    value,
 		}
+	}
+
+	if !beginData {
+		log.Fatalf("Read whole input and failed to find BEGINDATA")
 	}
 
 	if currentObject != nil {
