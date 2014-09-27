@@ -1,5 +1,44 @@
+Notes on the meanings of attribute values in the NSS root store
+
+
+================================================================================
+According to a mail by wtc from 10/10/11,
+
+https://groups.google.com/d/msg/mozilla.dev.tech.crypto/ZP3Kn84VBfA/_ozb5TvRLkcJ
+
+CKA_TRUST_SERVER_AUTH
+CKA_TRUST_EMAIL_PROTECTION
+CKA_TRUST_CODE_SIGNING
+
+are the "trust bits" that each correspond to one purpose and may take
+different values.
+
+In 10/2011, these were (I quote from the above mail):
+- CKT_NSS_TRUSTED_DELEGATOR: CA is trusted for that purpose.
+- CKT_NSS_TRUST_UNKNOWN: this means the CA is not trusted for that
+purpose, but is trusted for some other purpose.
+- CKT_NSS_NOT_TRUSTED: this means the certificate (which may not be a
+CA) is explicitly distrusted.
+
+Furthermore:
+"Note: I recommend that the scripts assert that these attributes only
+have these three values, so that it can detect when this assumption is
+no longer true." - this is absolutely true, and the root store meaning
+have changed over time, too.
+
+wtc finishes:
+"The scripts must exclude the certificates whose trust objects contain
+CKT_NSS_NOT_TRUSTED in any of the CKA_TRUST_SERVER_AUTH,
+CKA_TRUST_EMAIL_PROTECTION, and CKA_TRUST_CODE_SIGNING attributes."
+
+================================================================================
+
+
+In my own analysis, I found the following for earlier versions of the
+root store (decision whether to ignore or trust at the end of each
+line):
+
 # trust string; earliest; last; meaning changed; constant meaning; comment
-# TODO: MAP Firefox version to CVS ID
 
 CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NETSCAPE_TRUSTED; 1.1; 1.3; unlikely; used for test certs; IGNORE
 
@@ -28,7 +67,8 @@ CKA_TRUST_SERVER_AUTH CK_TRUST CKT_NSS_TRUST_UNKNOWN; 1.74; 1.83; unlikely; unkn
 CKA_TRUST_SERVER_AUTH CK_TRUST HTONL(CKT_NETSCAPE_TRUSTED); 1.2; 1.2; no ; used for test certs; IGNORE
 
 
-The purpose of the valid flags seems to be to display the CA in different tabs in the certificate manager.
+The purpose of the valid flags seems to be to display the CA in different tabs
+in the certificate manager.
 
 TRUST as server auth:
 CKT_NETSCAPE_TRUSTED_DELEGATOR
